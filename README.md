@@ -1,5 +1,5 @@
 # FCMouse  
-It's based on: https://wiki.freecadweb.org/Macro_FCInfoToMouse  
+based on FCInfoToMouse macro. 
 
 ## What I did?  
 *Fixed old codes  
@@ -9,9 +9,18 @@ It's based on: https://wiki.freecadweb.org/Macro_FCInfoToMouse
 *Auto Hide for Combo View, Report view, Python console added(move mouse to dock sides to see them)  
 
 ## Usage  
-*SHIFT + Q : for quit  
-*SHIFT + M : for force display, single mode, normal mode  
-*SHIFT + C : for hidden / visible  
+SHIFT + Q : quit  
+SHIFT + M : switch between cursor info modes  
+SHIFT + C : hidden / visible cursor info  
+SHIFT + D : enable/disable autohide docks  
+
+Note: If keys don't work click 3D View area and try again.  
+
+## Installation
+Download code.  
+Copy text from FCMouse.py.  
+Create a new macro.  
+Paste code in to macro and execute macro.  
 
 
 
