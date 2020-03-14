@@ -109,13 +109,13 @@ class ViewObserver:
         for key, value in dockAreas.items():
             dock = mv.findChild(QtWidgets.QDockWidget, key)
 
-            if ((pos[0] < 10) and (value == 'LeftDockWidgetArea')) or not autohide:
+            if ((pos[0] < 15) and (value == 'LeftDockWidgetArea')) or not autohide:
                 dock.show()
 
-            elif ((pos[1] < 10) and (value == 'BottomDockWidgetArea')) or not autohide:
+            elif ((pos[1] < 15) and (value == 'BottomDockWidgetArea')) or not autohide:
                 dock.show()
 
-            elif ((pos[0] > view.getSize()[0] - 10) and (value == 'RightDockWidgetArea')) or not autohide:
+            elif ((pos[0] > view.getSize()[0] - 15) and (value == 'RightDockWidgetArea')) or not autohide:
                 dock.show()
             else:
                 dock.hide()
