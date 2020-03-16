@@ -8,6 +8,11 @@ lastpos = FreeCAD.Vector(0, 0, 0)
 view_time = time.time()
 view_pos = [0, 0, 0]
 autohide = 1
+dockSituations = {}
+mv = FreeCADGui.getMainWindow()
+
+for dock in mv.findChildren(QtWidgets.QDockWidget):
+    dockSituations[dock.objectName()] =  dock.isVisible()
 
 try:
     view = FreeCADGui.ActiveDocument .ActiveView
@@ -98,27 +103,30 @@ class ViewObserver:
 
         import time
 
-        mv = FreeCADGui.getMainWindow()
         pos = info["Position"]                                                                                        # if mouse in 3D view
         time = time.time()
         dockAreas = {}
 
-        for dock in Gui.getMainWindow().findChildren(QtWidgets.QDockWidget):
-            dockAreas[dock.objectName()] =  str(FreeCADGui.getMainWindow().dockWidgetArea(dock)).rpartition('.')[-1]
+        for dock in mv.findChildren(QtWidgets.QDockWidget):
+            dockAreas[dock.objectName()] =  str(mv.dockWidgetArea(dock)).rpartition('.')[-1]
 
         for key, value in dockAreas.items():
             dock = mv.findChild(QtWidgets.QDockWidget, key)
+            situation = dockSituations.get(key)
 
-            if ((pos[0] < 15) and (value == 'LeftDockWidgetArea')) or not autohide:
-                dock.show()
+            if autohide and situation:
+                if ((pos[0] < 15) and (value == 'LeftDockWidgetArea')):
+                    dock.show()
 
-            elif ((pos[1] < 15) and (value == 'BottomDockWidgetArea')) or not autohide:
-                dock.show()
+                elif ((pos[1] < 15) and (value == 'BottomDockWidgetArea')):
+                    dock.show()
 
-            elif ((pos[0] > view.getSize()[0] - 15) and (value == 'RightDockWidgetArea')) or not autohide:
+                elif ((pos[0] > view.getSize()[0] - 15) and (value == 'RightDockWidgetArea')):
+                    dock.show()
+                else:
+                    dock.hide()
+            elif situation:
                 dock.show()
-            else:
-                dock.hide()
 
         """
         if (time - view_time < 1) or (view_pos != pos) or (visible != 1):
