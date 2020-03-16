@@ -8,11 +8,7 @@ lastpos = FreeCAD.Vector(0, 0, 0)
 view_time = time.time()
 view_pos = [0, 0, 0]
 autohide = 1
-dockSituations = {}
 mv = FreeCADGui.getMainWindow()
-
-for dock in mv.findChildren(QtWidgets.QDockWidget):
-    dockSituations[dock.objectName()] =  dock.isVisible()
 
 try:
     view = FreeCADGui.ActiveDocument .ActiveView
@@ -112,9 +108,7 @@ class ViewObserver:
 
         for key, value in dockAreas.items():
             dock = mv.findChild(QtWidgets.QDockWidget, key)
-            situation = dockSituations.get(key)
-
-            if autohide and situation:
+            if autohide:
                 if ((pos[0] < 15) and (value == 'LeftDockWidgetArea')):
                     dock.show()
 
@@ -125,7 +119,7 @@ class ViewObserver:
                     dock.show()
                 else:
                     dock.hide()
-            elif situation:
+            else:
                 dock.show()
 
         """
