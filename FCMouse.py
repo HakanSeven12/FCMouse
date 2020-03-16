@@ -9,6 +9,10 @@ view_time = time.time()
 view_pos = [0, 0, 0]
 autohide = 1
 mv = FreeCADGui.getMainWindow()
+dockSituations = {}
+
+for dock in mv.findChildren(QtWidgets.QDockWidget):
+    dockSituations[dock.objectName()] =  dock.isVisible()
 
 try:
     view = FreeCADGui.ActiveDocument .ActiveView
@@ -71,6 +75,7 @@ class ViewObserver:
         try:
             if (info["Key"] == "Q") and (info["State"] == "DOWN"):                        # SHIFT + Q for quit
                 self.view.removeEventCallback("SoEvent",callback)                     # close event observationa
+                autohide = (autohide + 1) % 2
                 #FreeCAD.ActiveDocument.removeObject(InfoAnn)
                 FreeCAD.Console.PrintMessage( "End Informations" + "\n")
         except:
@@ -97,17 +102,16 @@ class ViewObserver:
         except:
             pass
 
-        import time
-
-        pos = info["Position"]                                                                                        # if mouse in 3D view
-        time = time.time()
         dockAreas = {}
+        pos = info["Position"]                                                                                        # if mouse in 3D view
 
         for dock in mv.findChildren(QtWidgets.QDockWidget):
             dockAreas[dock.objectName()] =  str(mv.dockWidgetArea(dock)).rpartition('.')[-1]
 
         for key, value in dockAreas.items():
             dock = mv.findChild(QtWidgets.QDockWidget, key)
+            situation = dockSituations.get(key)
+
             if autohide:
                 if ((pos[0] < 15) and (value == 'LeftDockWidgetArea')):
                     dock.show()
@@ -119,10 +123,15 @@ class ViewObserver:
                     dock.show()
                 else:
                     dock.hide()
-            else:
+            elif situation:
                 dock.show()
+            else:
+                dock.hide()
 
         """
+        import time
+        time = time.time()
+        
         if (time - view_time < 1) or (view_pos != pos) or (visible != 1):
             InfoAnn.Visibility = 0
             view_time = time
