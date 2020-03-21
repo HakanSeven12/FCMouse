@@ -20,15 +20,6 @@ except:
     FreeCAD.newDocument()
     view = FreeCADGui.ActiveDocument .ActiveView
 
-InfoAnn = FreeCAD.ActiveDocument.addObject("App::AnnotationLabel","FCMouse") #Create info annotation
-
-InfoAnn.ViewObject.BackgroundColor = ((255.0/255.0),(255.0/255.0),(255.0/255.0)) #BackgroundColor: 0.0 to 255.0
-InfoAnn.ViewObject.TextColor       = ((0.0/255.0),(0.0/255.0),(0.0/255.0))       #TextColor: 0.0 to 255.0
-InfoAnn.ViewObject.DisplayMode     = "Line"             # "Line" or "Object"
-InfoAnn.ViewObject.FontSize        = 8.0                # Font size
-InfoAnn.ViewObject.Frame           = True               # "False" or "True"
-InfoAnn.ViewObject.Justification   = "Left"             # "Left", "Right", "Center"
-
 def coordInput(point3d): 
     # point3d = Base.Vector(x, y, z)
     point2d = view.getPointOnScreen(point3d)
@@ -59,12 +50,15 @@ def dist(vector1, vector2):
     if isinstance(vector1,FreeCAD.Vector) and isinstance(vector2,FreeCAD.Vector):
         return(vector1.sub(vector2)).Length
 
-class ViewObserver:
+class ViewObserver(QtWidgets.QLineEdit):
     def __init__(self, view):
+        super(ViewObserver, self).__init__(Gui.getMainWindow())
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.view = view
+        self.show()
+
     
     def logPosition(self, info):
-        global InfoAnn
         global force
         global visible
         global lastpos
@@ -76,7 +70,7 @@ class ViewObserver:
             if (info["Key"] == "Q") and (info["State"] == "DOWN"):                        # SHIFT + Q for quit
                 self.view.removeEventCallback("SoEvent",callback)                     # close event observationa
                 autohide = (autohide + 1) % 2
-                #FreeCAD.ActiveDocument.removeObject(InfoAnn)
+                super().deleteLater()
                 FreeCAD.Console.PrintMessage( "End Informations" + "\n")
         except:
             pass
@@ -90,7 +84,7 @@ class ViewObserver:
         try:
             if (info["Key"] == "C") and (info["State"] == "DOWN"):                        # SHIFT + C for hidden / visible cursor info
                 visible = (visible + 1) % 2
-                InfoAnn.Visibility = visible
+                self.setVisible(visible)
                 FreeCAD.Console.PrintMessage( "visibility: "+ str(visible) + "\n")
         except:
             pass
@@ -149,9 +143,6 @@ class ViewObserver:
         except:
             curpos = self.view.getPoint(pos)                                                                    # vector detect on mouse position 3D view
 
-        annpos = self.view.getPoint(pos[0]+10,pos[1]+10)                                              # offset annotation position
-        InfoAnn.BasePosition = FreeCAD.Vector(annpos[0], annpos[1], annpos[2])            # annotation position
-
         try:
             if (info["Button"] == "BUTTON1") and (info["State"] == "DOWN"):                           # coordinates clic to mouse
                 lastpos = curpos
@@ -159,7 +150,7 @@ class ViewObserver:
             pass
 
         if force == 0:
-            InfoAnn.LabelText = ["X: " + str(round(curpos[0],3)) + "    Y: " + str(round(curpos[1],3)) + "    Z: " + str(round(curpos[2],3))]
+            infoText = "X: " + str(round(curpos[0],3)) + "    Y: " + str(round(curpos[1],3)) + "    Z: " + str(round(curpos[2],3))
 
         elif (force == 1):
             coorBegin = "X1: " + str(round(lastpos[0],3)) + "    Y1: " + str(round(lastpos[1],3)) + "    Z1: " + str(round(lastpos[2],3))
@@ -172,14 +163,25 @@ class ViewObserver:
             angles = "XY: " + alphaXY + chr(176) + "    YZ: " + alphaYZ + chr(176) + "    XZ: " + alphaXZ + chr(176)    # unichr(176) = degrees character
 
             if objectInfo == "":
-                InfoAnn.LabelText = [coorBegin, coorEnd, length, angles]
+                infoText = coorBegin + "\n"  + coorEnd + "\n"  + length + "\n"  + angles
             else:
-                InfoAnn.LabelText = [objectInfo, coorBegin, coorEnd, length, angles]
+                infoText = objectInfo + "\n" + coorBegin + "\n"  + coorEnd + "\n"  + length + "\n"  + angles
         else:
             if objectInfo == "":
-                InfoAnn.LabelText = ["X: " + str(round(curpos[0],3)) + "    Y: " + str(round(curpos[1],3)) + "    Z: " + str(round(curpos[2],3)),]
+                infoText = "X: " + str(round(curpos[0],3)) + "    Y: " + str(round(curpos[1],3)) + "    Z: " + str(round(curpos[2],3))
             else:
-                InfoAnn.LabelText = [objectInfo, "X: " + str(round(curpos[0],3)) + "    Y: " + str(round(curpos[1],3)) + "    Z: " + str(round(curpos[2],3))]
+                infoText = objectInfo + "\n"  + "X: " + str(round(curpos[0],3)) + "    Y: " + str(round(curpos[1],3)) + "    Z: " + str(round(curpos[2],3))
+
+        position = QtGui.QCursor().pos()
+        self.move(position.x() + 20, position.y() + 0)
+        self.setText(infoText)
+        fm = self.fontMetrics()
+        self.setMinimumWidth(fm.width(infoText)+20)
+        self.setMaximumWidth(fm.width(infoText)+21)
+        
+        if (pos[0] < 15) or (pos[1] < 50) or (pos[0] > view.getSize()[0] - 15) \
+            or (pos[1] > view.getSize()[1] - 15): self.setVisible(0)
+        else: self.setVisible(1)
 
 FreeCAD.Console.PrintMessage("__________________Welcome to FCMouse__________________" + "\n")
 FreeCAD.Console.PrintMessage("SHIFT + Q : quit" + "\n")
